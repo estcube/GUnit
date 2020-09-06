@@ -1,0 +1,4 @@
+Breakpoint 1 at 0x1129: file test.c, line 3.
+
+Breakpoint 1, gunit_hook (expected=21845, result=1431654464, line_number=0) at test.c:3
+3	void gunit_hook(uint32_t expected, uint32_t result, uint32_t line_number) {
