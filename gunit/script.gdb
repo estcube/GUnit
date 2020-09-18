@@ -12,7 +12,7 @@ b gunit_hook
 commands 1
  set $test_count = $test_count + 1
  printf "TEST%d\n", $test_count
- printf "PASS %d\n", result == expected
+ printf "PASS %d\n", (result == expected) ^ no
  printf "RESULT %d\n", result
  printf "EXPECT %d\n", expected
  printf "ONLINE %d\n", line_number
