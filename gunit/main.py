@@ -31,38 +31,8 @@ class GUnit:
         #    path = testsuite(path)
         #    path = self.build_method(path)
 
-        commands = f'''
-set pagination off
-set confirm off
-set $test_count = 0
-
-set logging file {self.build_dir}{os.sep}gunit{os.sep}gdblog
-set logging on
-
-file {path}
-
-b gunit_hook
-
-commands\\nset $test_count = $test_count + 1\\nprintf "TEST%d\\n", $test_count\\np result\\np expected\\np line_number\\nbt\\nc\\nend
-
-run
-set logging off
-quit
-        '''
-
-        commands = commands.split('\n')
-
-        # Remove empty lines
-        for command in commands:
-            if re.match("^[ \t]+$", command) or command == "":
-                commands.remove(command)
-
-        commands = map(lambda cmd: f" -ex='{cmd}'", commands)
-        commands = ''.join(commands)
-
         # Activate GDB and connect to server
-        os.system(f'gdb -batch-silent {commands}')
-
+        os.system(f'gdb -batch-silent -x script.gdb')
 
         return
 
