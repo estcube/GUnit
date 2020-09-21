@@ -1,29 +1,23 @@
-set pagination off
-set $test_count = 0
-
-set print frame-arguments none
-
-set logging file gunit/gdblog
-set logging overwrite on
-set logging on
-
-file a.out
-
 b gunit_hook
+b gunit_end
 
 commands 1
  silent
- set $test_count = $test_count + 1
- printf "TEST%d\n", $test_count
+ printf "\n"
+ printf "TESTx\n"
  printf "LINE %d\n", line_number
  printf "PASS %d\n", (result == expected) ^ no
  printf "EXPECT %d\n", expected
  printf "RESULT %d\n", result
+ printf "BACKTRACE\n"
  bt
- printf "\n"
  c
 end
 
-run
-set logging off
-quit
+commands 2
+ silent
+ set logging off
+ quit
+end
+
+c

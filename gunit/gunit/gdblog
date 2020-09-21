@@ -1,0 +1,157 @@
+warning: No executable has been specified and target does not support
+determining executable automatically.  Try using the "file" command.
+0x080003b8 in ?? ()
+Loading section .isr_vector, size 0x1c8 lma 0x8000000
+Loading section .text.Reset_Handler, size 0x14 lma 0x80001c8
+Loading section .text, size 0x241d4 lma 0x8000200
+Loading section .init, size 0x18 lma 0x80243d4
+Loading section .fini, size 0x18 lma 0x80243ec
+Loading section .rodata, size 0xa84 lma 0x8024404
+Loading section .eh_frame, size 0x4 lma 0x8024e88
+Loading section .ARM.exidx, size 0x8 lma 0x8024e8c
+Loading section .rodata.hal_crc_cfg_default, size 0xb4 lma 0x8024e94
+Loading section .rodata.hal_adc_cfg_default, size 0x40 lma 0x8024f48
+Loading section .rodata.hal_dac_cfg_default, size 0xa8 lma 0x8024f88
+Loading section .rodata.hal_flash_cfg_default, size 0x3d lma 0x8025030
+Loading section .rodata.hal_gpio_pin_cfg_default, size 0xa0 lma 0x8025070
+Loading section .rodata.hal_i2c_cfg_default, size 0x87 lma 0x8025110
+Loading section .rodata.hal_pwr_cfg_default, size 0x3a lma 0x8025198
+Loading section .rodata.hal_rtc_cfg_default, size 0x76 lma 0x80251d4
+Loading section .rodata.hal_spi_cfg_default, size 0x214 lma 0x802524c
+Loading section .rodata.hal_tim_cfg_default, size 0xb4 lma 0x8025460
+Loading section .rodata.hal_usart_channel_cfg_default, size 0x1f8 lma 0x8025514
+Loading section .rodata.hal_rng_cfg_default, size 0x35 lma 0x802570c
+Loading section .rodata.hal_wwdg_cfg_default, size 0x38 lma 0x8025744
+Loading section .rodata.hal_iwdg_cfg_default, size 0x6e lma 0x802577c
+Loading section .rodata.hal_can_cfg_default, size 0x1c lma 0x80257ec
+Loading section .rodata.g_hal_tim_register, size 0x380 lma 0x8025808
+Loading section .rodata.g_hal_usart_register, size 0x200 lma 0x8025b88
+Loading section .rodata.g_hal_spi_register, size 0x180 lma 0x8025d88
+Loading section .rodata.g_hal_adc_register, size 0xc0 lma 0x8025f08
+Loading section .rodata.g_hal_gpio_register, size 0x2c0 lma 0x8025fc8
+Loading section .rodata.g_hal_i2c_register, size 0x100 lma 0x8026288
+Loading section .rodata.g_hal_dma_registers, size 0x80 lma 0x8026388
+Loading section .rodata.g_hal_dma_stream_registers, size 0x400 lma 0x8026408
+Loading section .rodata.g_hal_can_registers, size 0xc0 lma 0x8026808
+Loading section .rodata.can_irqn.10693, size 0xc lma 0x80268c8
+Loading section .rodata.g_channels, size 0xe lma 0x80268d4
+Loading section .rodata.__compound_literal.1, size 0x5 lma 0x80268e4
+Loading section .rodata.__compound_literal.2, size 0x5 lma 0x80268ec
+Loading section .rodata.__compound_literal.3, size 0x5 lma 0x80268f4
+Loading section .rodata.__compound_literal.4, size 0x5 lma 0x80268fc
+Loading section .rodata.__compound_literal.5, size 0x5 lma 0x8026904
+Loading section .rodata.__compound_literal.6, size 0x5 lma 0x802690c
+Loading section .rodata.__compound_literal.7, size 0x5 lma 0x8026914
+Loading section .rodata.__compound_literal.8, size 0x5 lma 0x802691c
+Loading section .rodata.g_internal_connections, size 0x30 lma 0x8026924
+Loading section .rodata.g_sectors, size 0x20 lma 0x8026954
+Loading section .rodata.g_db_sectors, size 0x100 lma 0x8026974
+Loading section .rodata.g_sectors_len, size 0x20 lma 0x8026a74
+Loading section .rodata.g_db_sectors_len, size 0x100 lma 0x8026a94
+Loading section .rodata.hal_fmc_norpsram_cfg_default, size 0x20 lma 0x8026b94
+Loading section .rodata.address_types, size 0x1a lma 0x8026bb4
+Loading section .rodata.data_types, size 0x20 lma 0x8026bd0
+Loading section .rodata.cs_types, size 0x4 lma 0x8026bf0
+Loading section .rodata.bl_types, size 0x4 lma 0x8026bf4
+Loading section .rodata.hal_qspi_cfg_default, size 0x28 lma 0x8026bf8
+Loading section .rodata.g_af_database, size 0x7c lma 0x8026c20
+Loading section .rodata.g_dma_database, size 0xb0 lma 0x8026c9c
+Loading section .rodata.g_adc_database, size 0x62 lma 0x8026d4c
+Loading section .rodata.g_af_count, size 0x2 lma 0x8026dae
+Loading section .rodata.g_dma_count, size 0x2 lma 0x8026db0
+Loading section .rodata.g_adc_count, size 0x2 lma 0x8026db2
+Loading section .rodata.pcInterruptPriorityRegisters, size 0x4 lma 0x8026db4
+Loading section .rodata.xHeapStructSize, size 0x4 lma 0x8026db8
+Loading section .rodata.bmg160_sensor_cfg_default, size 0x4e lma 0x8026dbc
+Loading section .rodata.rv3049c3_therm_cfg_default, size 0x2 lma 0x8026e0c
+Loading section .rodata.rv3049c3_clk_cfg_default, size 0x1e lma 0x8026e10
+Loading section .rodata.lis3mdl_sensor_cfg_default, size 0x18 lma 0x8026e30
+Loading section .rodata.fxos8700cq_mag_cfg_default, size 0x18 lma 0x8026e48
+Loading section .rodata.fxos8700cq_acc_cfg_default, size 0x34 lma 0x8026e60
+Loading section .rodata.fxos8700cq_sensor_cfg_default, size 0x60 lma 0x8026e94
+Loading section .rodata.mcp23s17_output_cfg_default, size 0x5 lma 0x8026ef4
+Loading section .rodata.mcp23s17_input_cfg_default, size 0x5 lma 0x8026efc
+Loading section .rodata._ZStL19piecewise_construct, size 0x1 lma 0x8026f04
+Loading section .rodata._ZStL13allocator_arg, size 0x1 lma 0x8026f08
+Loading section .rodata._ZStL6ignore, size 0x1 lma 0x8026f0c
+Loading section .rodata._ZN5EigenL7DynamicE, size 0x4 lma 0x8026f10
+Loading section .rodata._ZN5EigenL12DynamicIndexE, size 0x4 lma 0x8026f14
+Loading section .rodata._ZN5EigenL8InfinityE, size 0x4 lma 0x8026f18
+Loading section .rodata._ZN5EigenL8HugeCostE, size 0x4 lma 0x8026f1c
+Loading section .rodata._ZN5EigenL11RowMajorBitE, size 0x4 lma 0x8026f20
+Loading section .rodata._ZN5EigenL20EvalBeforeNestingBitE, size 0x4 lma 0x8026f24
+Loading section .rodata._ZN5EigenL22EvalBeforeAssigningBitE, size 0x4 lma 0x8026f28
+Loading section .rodata._ZN5EigenL15PacketAccessBitE, size 0x4 lma 0x8026f2c
+Loading section .rodata._ZN5EigenL21ActualPacketAccessBitE, size 0x4 lma 0x8026f30
+Loading section .rodata._ZN5EigenL15LinearAccessBitE, size 0x4 lma 0x8026f34
+Loading section .rodata._ZN5EigenL9LvalueBitE, size 0x4 lma 0x8026f38
+Loading section .rodata._ZN5EigenL15DirectAccessBitE, size 0x4 lma 0x8026f3c
+Loading section .rodata._ZN5EigenL10AlignedBitE, size 0x4 lma 0x8026f40
+Loading section .rodata._ZN5EigenL12NestByRefBitE, size 0x4 lma 0x8026f44
+Loading section .rodata._ZN5EigenL26NoPreferredStorageOrderBitE, size 0x4 lma 0x8026f48
+Loading section .rodata._ZN5EigenL19CompressedAccessBitE, size 0x4 lma 0x8026f4c
+Loading section .rodata._ZN5EigenL14HereditaryBitsE, size 0x4 lma 0x8026f50
+Loading section .rodata._ZN5Eigen8internalL18defaultL1CacheSizeE, size 0x4 lma 0x8026f54
+Loading section .rodata._ZN5Eigen8internalL18defaultL2CacheSizeE, size 0x4 lma 0x8026f58
+Loading section .rodata._ZN5Eigen8internalL18defaultL3CacheSizeE, size 0x4 lma 0x8026f5c
+Loading section .rodata.__assert_func.str1.4, size 0x3f lma 0x8026f60
+Loading section .rodata._global_impure_ptr, size 0x4 lma 0x8026fa0
+Loading section .rodata._svfprintf_r.str1.4, size 0x42 lma 0x8026fa4
+Loading section .rodata.blanks.8698, size 0x10 lma 0x8026fe8
+Loading section .rodata.zeroes.8699, size 0x10 lma 0x8026ff8
+Loading section .rodata._vfiprintf_r.str1.4, size 0x2f lma 0x8027008
+Loading section .rodata.blanks.8691, size 0x10 lma 0x8027038
+Loading section .rodata.zeroes.8692, size 0x10 lma 0x8027048
+Loading section .rodata._dtoa_r.str1.4, size 0xa4 lma 0x8027058
+Loading section .rodata._setlocale_r.str1.4, size 0xd lma 0x80270fc
+Loading section .rodata.str1.4, size 0x2 lma 0x802710c
+Loading section .rodata.__multadd.str1.4, size 0x91 lma 0x8027110
+Loading section .rodata.__mprec_bigtens, size 0x28 lma 0x80271a8
+Loading section .rodata.__mprec_tens, size 0xc8 lma 0x80271d0
+Loading section .rodata.__mprec_tinytens, size 0x28 lma 0x8027298
+Loading section .rodata.p05.7485, size 0xc lma 0x80272c0
+Loading section .rodata._svfiprintf_r.str1.4, size 0x2f lma 0x80272cc
+Loading section .rodata.blanks.8677, size 0x10 lma 0x80272fc
+Loading section .rodata.zeroes.8678, size 0x10 lma 0x802730c
+Loading section .rodata._ctype_, size 0x101 lma 0x802731c
+Loading section .data, size 0x9f8 lma 0x802741d
+Loading section .init_array, size 0x4 lma 0x8027e15
+Loading section .fini_array, size 0x4 lma 0x8027e19
+Loading section .init_array.00000, size 0x4 lma 0x8027e1d
+Start address 0x8000200, load size 163246
+Transfer rate: 20 KB/sec, 1255 bytes/write.
+adapter speed: 2000 kHz
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x080001c8 msp: 0x2007fffc
+Reduced speed from 8000 kHz to 4000 kHz (maximum).
+adapter speed: 8000 kHz
+Breakpoint 1 at 0x80003b2: file dev/gunit.c, line 4.
+Breakpoint 2 at 0x80003b8: file dev/gunit.c, line 8.
+Note: automatically using hardware breakpoints for read-only addresses.
+
+TESTx
+LINE 12
+PASS 1
+EXPECT 50
+RESULT 50
+BACKTRACE
+#0  gunit_hook (expected=..., result=..., line_number=..., no=...) at dev/gunit.c:4
+#1  0x080003e4 in main () at dev/gunit.c:12
+
+TESTx
+LINE 13
+PASS 1
+EXPECT 30
+RESULT 40
+BACKTRACE
+#0  gunit_hook (expected=..., result=..., line_number=..., no=...) at dev/gunit.c:4
+#1  0x08000408 in main () at dev/gunit.c:13
+
+TESTx
+LINE 14
+PASS 0
+EXPECT 2
+RESULT 1000
+BACKTRACE
+#0  gunit_hook (expected=..., result=..., line_number=..., no=...) at dev/gunit.c:4
+#1  0x0800042c in main () at dev/gunit.c:14
