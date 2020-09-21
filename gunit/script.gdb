@@ -3,8 +3,9 @@ b gunit_end
 
 commands 1
  silent
- printf "\n"
+ !date +%s.%N >> $GUNIT_GDBTIMES
  printf "TESTx\n"
+ printf "FILE %s\n", file
  printf "LINE %d\n", line_number
  printf "PASS %d\n", (result == expected) ^ no
  printf "EXPECT %d\n", expected
@@ -20,4 +21,7 @@ commands 2
  quit
 end
 
+!date +%s.%N > $GUNIT_GDBTIMES
+
 c
+run

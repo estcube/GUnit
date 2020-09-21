@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<testsuites disabled="0" errors="0" failures="2" tests="4" time="0.0">
+	<testsuite disabled="0" errors="0" failures="1" name="gunit" skipped="0" tests="1" time="0">
+		<testcase name="Test1" classname="main">
+			<failure type="failure" message="Expected 2, received 1000">
+#0  gunit_hook (expected=..., result=..., line_number=..., file=..., no=...) at dev/gunit2.h:4
+#1  0x08000530 in main () at dev/gunit.c:7
+</failure>
+			<failure type="failure" message="Did not expect 177">
+#0  gunit_hook (expected=..., result=..., line_number=..., file=..., no=...) at dev/gunit2.h:4
+#1  0x08000558 in main () at dev/gunit.c:8
+</failure>
+		</testcase>
+	</testsuite>
+	<testsuite disabled="0" errors="0" failures="1" name="gunit2" skipped="0" tests="3" time="0">
+		<testcase name="Test1" classname="a">
+			<failure type="failure" message="Did not expect 17000">
+#0  gunit_hook (expected=..., result=..., line_number=..., file=..., no=...) at dev/gunit2.h:4
+#1  0x08000410 in a () at dev/gunit2.h:13
+#2  0x0800055c in main () at dev/gunit.c:10
+</failure>
+		</testcase>
+		<testcase name="Test2" classname="b"/>
+		<testcase name="Test3" classname="c"/>
+	</testsuite>
+</testsuites>

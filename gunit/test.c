@@ -32,6 +32,8 @@ void test() {
 
   GSTRUCT_ASSERT(struct1, struct2);
   GSTRUCT_NOT_ASSERT(struct1, struct3);
+
+  GEND();
 }
 
 int main() {
