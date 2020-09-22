@@ -12,6 +12,7 @@ commands 1
  printf "RESULT %d\n", result
  printf "BACKTRACE\n"
  bt
+ !date +%s.%N >> $GUNIT_GDBTIMES
  c
 end
 

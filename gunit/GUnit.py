@@ -4,43 +4,37 @@ import re
 from collections import defaultdict
 from junit_xml import TestSuite, TestCase
 
-class GUnit:
-    def __init__(self, build_dir, executable='gdb'):
-        self.build_dir = build_dir
-        self.logging_file = f'{build_dir}{os.sep}gunit{os.sep}gdblog'
-        self.log = f'-ex "set logging file {self.logging_file}"'
+module_dir = os.path.abspath(os.path.dirname(__file__))
 
+class GUnit:
+    def __init__(self, build_dir='.', executable='gdb'):
+        self.build_dir = os.path.abspath(os.path.join(build_dir, 'gunit'))
+
+        self.logging_file = os.path.join(self.build_dir, 'gdblog')
+        self.times_file = os.path.join(self.build_dir, 'gdbtimes')
+        self.report_file = os.path.join(self.build_dir, 'report.xml')
+
+        self.log = f'-ex "set logging file {self.logging_file}"'
         self.remote = ''
         self.load = ''
 
         self.gdb = executable
 
-    # Configure GUnit for OpenOCD server
-    def openOCD(build_dir, gdb_uri, executable='gdb'):
-        target = GUnit(build_dir, executable)
-        target.remote = f'-ex "target remote {gdb_uri}"'
-        target.load = '-ex load -ex "monitor reset init"'
-
-        return target
-
-    # Configure GUnit for regular GDB server
-    def gdbserver(build_dir, gdb_uri):
-        target = GUnit(build_dir)
-        target.remote = f'-ex "target remote {gdb_uri}"'
-
-        return target
-
     # Runs automatic testing on given binary/test suite
     def test(self, path=None):
-        os.environ["GUNIT_GDBTIMES"] = f"{self.build_dir}{os.sep}gunit{os.sep}gdbtimes"
+        # Get scripts
+        setup_path = os.path.join(module_dir, 'setup.gdb')
+        execute_path = os.path.join(module_dir, 'execute.gdb')
+
+        os.environ["GUNIT_GDBTIMES"] = self.times_file
 
         # Activate GDB and connect to server
-        command = f'{self.gdb} -batch-silent {self.log} -x setup.gdb {self.remote} '
+        command = f'{self.gdb} -batch-silent {self.log} -x {setup_path} {self.remote} '
 
         if path is not None:
             command += f'-ex "file {path}" {self.load} '
 
-        command += f'-x script.gdb'
+        command += f'-x {execute_path}'
 
         os.system(command)
 
@@ -55,7 +49,17 @@ class GUnit:
 
         last_function = None
 
-        for testcase in cases[1:]:
+        deltas = []
+
+        with open(self.times_file, "r") as test_times:
+            # Get deltas
+            times = test_times.readlines()
+            for i in range(int(len(times) / 2)):
+                start_time = float(times[2 * i])
+                end_time = float(times[2 * i + 1])
+                deltas += [end_time - start_time]
+
+        for i, testcase in enumerate(cases[1:]):
             caseparts = testcase.split("BACKTRACE")
 
             suite = re.search(r"FILE (.*)\n", caseparts[0]).group(1)
@@ -71,11 +75,12 @@ class GUnit:
             tc = None
 
             if last_function != function:
-                tc = TestCase(f"Test{test_no[suite]}", function, 0.0, "", "", allow_multiple_subelements=True)
+                tc = TestCase(f"Test{test_no[suite]}", function, deltas[i], "", "", allow_multiple_subelements=True)
                 test_no[suite] += 1
 
             else:
                 tc = test_cases[suite][-1]
+                tc.elapsed_sec += deltas[i]
                 add = False
 
             last_function = function
@@ -98,14 +103,36 @@ class GUnit:
         for key in test_cases.keys():
             test_suites += [TestSuite(key, test_cases[key])]
 
-        with open(f"{self.build_dir}{os.sep}gunit{os.sep}report.xml", "w") as outxml:
-            outxml.write(TestSuite.to_xml_string(test_suites))
+        with open(self.report_file, "w") as outxml:
+                outxml.write(TestSuite.to_xml_string(test_suites))
 
+    #### STATIC FUNCTIONS ####
 
-gunit = GUnit.openOCD(".", ":9000", "arm-none-eabi-gdb")
+    # Generate GUnit.h
+    def get_header(build_dir='.'):
+        source_path = os.path.join(module_dir, 'GUnit.h')
+        destination_path = os.path.abspath(os.path.join(build_dir, 'GUnit.h'))
+
+        with open(source_path, "r") as src, open(destination_path, "w") as dst:
+            dst.write(src.read())
+
+    # Configure GUnit for OpenOCD server
+    def openOCD(gdb_uri, build_dir='.', executable='gdb'):
+        target = GUnit(build_dir, executable)
+
+        target.remote = f'-ex "target remote {gdb_uri}"'
+        target.load = '-ex load -ex "monitor reset init"'
+
+        return target
+
+    # Configure GUnit for regular GDB server
+    def gdbserver(gdb_uri, build_dir='.'):
+        target = GUnit(build_dir)
+
+        target.remote = f'-ex "target remote {gdb_uri}"'
+
+        return target
+
+gunit = GUnit.openOCD("localhost:9000", executable='arm-none-eabi-gdb')
 gunit.test("/home/mathiasplans/ESTCube/OBCS/firmware/build/bin/main.elf")
-
-#gunit = GUnit.gdbserver(".", ":9002")
-#gunit.test()
-
 gunit.junit()

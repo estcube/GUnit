@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 #include <stdbool.h>
 
 typedef void (*gunit_function_t)();
