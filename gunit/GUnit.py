@@ -10,6 +10,9 @@ class GUnit:
     def __init__(self, build_dir='.', executable='gdb'):
         self.build_dir = os.path.abspath(os.path.join(build_dir, 'gunit'))
 
+        # Create output directory
+        os.makedirs(self.build_dir, exist_ok=True)
+
         self.logging_file = os.path.join(self.build_dir, 'gdblog')
         self.times_file = os.path.join(self.build_dir, 'gdbtimes')
         self.report_file = os.path.join(self.build_dir, 'report.xml')
@@ -132,7 +135,3 @@ class GUnit:
         target.remote = f'-ex "target remote {gdb_uri}"'
 
         return target
-
-gunit = GUnit.openOCD("localhost:9000", executable='arm-none-eabi-gdb')
-gunit.test("/home/mathiasplans/ESTCube/OBCS/firmware/build/bin/main.elf")
-gunit.junit()
