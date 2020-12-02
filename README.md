@@ -1,7 +1,7 @@
 # GUnit
 App for executing unit tests using GDB.
 
--fvar-tracking and -g has to be used when compiling the tests
+Documentation: https://github.com/estcube/GUnit/wiki/Documentation
 
 ## Example
 For example if OpenOCD is used as GDB server and we are testing on an ARM chip
