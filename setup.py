@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='gunit',
-        version = '0.1.6',
+        version = '0.1.8',
         description = 'App for unit testing with GDB',
         long_description = readme(),
         url = 'https://github.com/estcube/GUnit',
@@ -15,4 +15,5 @@ setup(name='gunit',
         packages = ['gunit'],
         install_requires = ['junit-xml'],
         include_package_data=True,
-        zip_safe = False)
+        zip_safe = False,
+        scripts=['bin/gunit-openocd', 'bin/gunit-gdbserver', 'bin/gunit-header'])
