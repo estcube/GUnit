@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef void (*gunit_function_t)();
 
@@ -58,7 +59,8 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
 /**
  * Execute given tests with before and after functions
  */
-#define GEXECUTE(before, after, ...)  {gunit_suite(before, after, (gunit_function_t[]){__VA_ARGS__}, sizeof((int[]){__VA_ARGS__})/sizeof(int))}
+#define GEXECUTE(before, after, ...)  {gunit_suite(before, after, (gunit_function_t[]){__VA_ARGS__}, \
+    sizeof((gunit_function_t[]){__VA_ARGS__}) / sizeof(gunit_function_t));}
 
 /**
  * Exevute tests without before or after
