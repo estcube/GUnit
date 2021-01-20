@@ -44,7 +44,8 @@ inline static void gunit_end() {
  * Execute a test suite
  */
 __attribute__((optimize(0)))
-inline static void gunit_suite(gunit_function_t before, gunit_function_t after, gunit_function_t *tests, uintmax_t nr_of_tests) {
+inline static void gunit_suite(gunit_function_t before, gunit_function_t after, const gunit_function_t *tests,
+                               uintmax_t nr_of_tests) {
   for (uintmax_t i = 0; i < nr_of_tests; ++i) {
     if (before)
       (*before)();
@@ -59,7 +60,7 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
 /**
  * Execute given tests with before and after functions
  */
-#define GEXECUTE(before, after, ...)  {gunit_suite(before, after, (gunit_function_t[]){__VA_ARGS__}, \
+#define GEXECUTE(before, after, ...)  {gunit_suite(before, after, (const gunit_function_t[]){__VA_ARGS__}, \
     sizeof((gunit_function_t[]){__VA_ARGS__}) / sizeof(gunit_function_t));}
 
 /**

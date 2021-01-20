@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='gunit',
-        version = '0.1.8',
+        version = '0.1.9',
         description = 'App for unit testing with GDB',
         long_description = readme(),
         url = 'https://github.com/estcube/GUnit',
