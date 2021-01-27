@@ -102,3 +102,9 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
  * Assert if given structs don't contain same values
  */
 #define GSTRUCT_NOT_ASSERT(not_expected, result) {if (!gunit_array((void *) &not_expected, (void *) &result, sizeof(typeof(not_expected)), __LINE__, __FILE__, true)) return;}
+
+/**
+ * Inline data for the test. Use this
+ * to give arguments to your test.
+ */
+#define GINLINE_DATA(name, test, ...) static void name() {test(__VA_ARGS__);}
