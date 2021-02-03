@@ -136,7 +136,7 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
 /**
  * Asserts if the value is in between the given values
  */
-#define GINTERVAL_ASSERT(expectedhigh, expectedlow, result) {GLESS_ASSERT(expectedhigh, result); GGREATER_ASSERT(expectedlow, result);}
+#define GINTERVAL_ASSERT(expectedlow, expectedhigh, result) {GLESS_ASSERT(expectedhigh, result); GGREATER_ASSERT(expectedlow, result);}
 
 /**
  * Inline data for the test. Use this
