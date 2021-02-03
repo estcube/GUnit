@@ -84,7 +84,7 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
     sizeof((gunit_function_t[]){__VA_ARGS__}) / sizeof(gunit_function_t));}
 
 /**
- * Exevute tests without before or after
+ * Execute tests without before or after
  */
 #define GSIMPLE_EXECUTE(...) GEXECUTE(NULL, NULL, __VA_ARGS__)
 
@@ -94,9 +94,9 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
 #define GEND() {gunit_end();}
 
 /**
- * Assert if given values are equel.
+ * Assert if given values are equal.
  */
-#define GASSERT(expected, result)  {if (!gunit_hook((uintmax_t) expected, (uintmax_t) result, __LINE__, __FILE__, false)) return;}
+#define GASSERT(expected, result) {if (!gunit_hook((uintmax_t) expected, (uintmax_t) result, __LINE__, __FILE__, false)) return;}
 
 /**
  * Assert if given values are not equal.
