@@ -19,7 +19,7 @@ inline static bool gunit_hook(uintmax_t expected, uintmax_t result, uintmax_t li
  */
 __attribute__((optimize(0)))
 inline static bool gunit_range_hook(uintmax_t expected, uintmax_t result, uintmax_t line_number, const char *file, bool greater) {
-  return !greater && (expected > result) || greater && (expected < result);
+  return (!greater && (expected > result)) || (greater && (expected < result));
 }
 
 /**
