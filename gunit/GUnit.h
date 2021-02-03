@@ -15,6 +15,14 @@ inline static bool gunit_hook(uintmax_t expected, uintmax_t result, uintmax_t li
 }
 
 /**
+ * Asserts for comparing ranges
+ */
+__attribute__((optimize(0)))
+inline static bool gunit_range_hook(uintmax_t expected, uintmax_t result, uintmax_t line_number, const char *file, bool greater) {
+  return !greater && (expected > result) || greater && (expected < result);
+}
+
+/**
  * Function for asserting arrays and objects
  */
 __attribute__((optimize(0)))
@@ -30,6 +38,18 @@ inline static bool gunit_array(void *expected, void *result, uintmax_t size, uin
 
   // If no differences were found
   return gunit_hook((uintmax_t) expected, (uintmax_t) result, line_number, file, !no);
+}
+
+__attribute__((optimize(0)))
+inline static void gunit_fail_hook(uintmax_t line_number, const char *file, const gunit_function_t test) {
+  return;
+}
+
+__attribute__((optimize(0)))
+inline static void gunit_fail(uintmax_t line_number, const char *file, const gunit_function_t *tests, uintmax_t nr_of_tests) {
+  for (uintmax_t i = 0; i < nr_of_tests; ++i) {
+    gunit_fail_hook(line_number, file, tests[i]);
+  }
 }
 
 /**
@@ -104,7 +124,28 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
 #define GSTRUCT_NOT_ASSERT(not_expected, result) {if (!gunit_array((void *) &not_expected, (void *) &result, sizeof(typeof(not_expected)), __LINE__, __FILE__, true)) return;}
 
 /**
+ * Asserts if the value is less than expected
+ */
+#define GLESS_ASSERT(expected, result) {if (!gunit_range_hook(expected, result, __LINE__, __FILE__, false)) return;}
+
+/**
+ * Asserts if the value is greater than expected
+ */
+#define GGREATER_ASSERT(expected, result) {if (!gunit_range_hook(expected, result, __LINE__, __FILE__, true)) return;}
+
+/**
+ * Asserts if the value is in between the given values
+ */
+#define GINTERVAL_ASSERT(expectedhigh, expectedlow, result) {GLESS_ASSERT(expectedhigh, result); GGREATER_ASSERT(expectedlow, result);}
+
+/**
  * Inline data for the test. Use this
  * to give arguments to your test.
  */
 #define GINLINE_DATA(name, test, ...) static void name() {test(__VA_ARGS__);}
+
+/**
+ * Fail the given tests
+ */
+#define GFAIL(...) {gunit_fail(__LINE__, __FILE__, (const gunit_function_t[]){__VA_ARGS__}, \
+                    sizeof((gunit_function_t[]){__VA_ARGS__}) / sizeof(gunit_function_t));}

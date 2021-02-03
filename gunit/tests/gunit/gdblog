@@ -1,0 +1,88 @@
+Reading /home/mathiasplans/ESTCube/testing/GUnit/gunit/tests/a.out from remote target...
+warning: File transfers from remote targets can be slow. Use "set sysroot" to access files locally instead.
+Reading /home/mathiasplans/ESTCube/testing/GUnit/gunit/tests/a.out from remote target...
+Reading symbols from target:/home/mathiasplans/ESTCube/testing/GUnit/gunit/tests/a.out...
+Reading /lib64/ld-linux-x86-64.so.2 from remote target...
+Reading /lib64/ld-linux-x86-64.so.2 from remote target...
+Reading /lib64/ld-2.31.so from remote target...
+Reading /lib64/.debug/ld-2.31.so from remote target...
+Reading /usr/lib/debug//lib64/ld-2.31.so from remote target...
+Reading /usr/lib/debug/lib64//ld-2.31.so from remote target...
+Reading target:/usr/lib/debug/lib64//ld-2.31.so from remote target...
+0x00007ffff7fd0100 in ?? () from target:/lib64/ld-linux-x86-64.so.2
+Breakpoint 1 at 0x555555555149: file ../GUnit.h, line 13.
+Breakpoint 2 at 0x55555555523f: file ../GUnit.h, line 59.
+Breakpoint 3 at 0x5555555551ce: file ../GUnit.h, line 44.
+Breakpoint 4 at 0x55555555517e: file ../GUnit.h, line 21.
+Reading /lib/x86_64-linux-gnu/libc.so.6 from remote target...
+Reading /lib/x86_64-linux-gnu/libc-2.31.so from remote target...
+Reading /lib/x86_64-linux-gnu/.debug/libc-2.31.so from remote target...
+Reading /usr/lib/debug//lib/x86_64-linux-gnu/libc-2.31.so from remote target...
+Reading /usr/lib/debug//lib/x86_64-linux-gnu/libc-2.31.so from remote target...
+TESTx
+FILE test.c
+LINE 29
+PASS 0
+TYPE 1
+BACKTRACE
+$1 = {void ()} 0x5555555552bc <test0>
+TESTx
+FILE test.c
+LINE 9
+PASS 1
+TYPE 0
+EXPECT 5
+RESULT 5
+BACKTRACE
+#0  gunit_hook (expected=..., result=..., line_number=..., file=..., no=...) at ../GUnit.h:13
+#1  0x0000555555555315 in test1 () at test.c:9
+#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
+#3  0x0000555555555471 in main () at test.c:30
+TESTx
+FILE test.c
+LINE 13
+PASS 0
+TYPE 0
+EXPECT 4
+RESULT 3
+BACKTRACE
+#0  gunit_hook (expected=..., result=..., line_number=..., file=..., no=...) at ../GUnit.h:13
+#1  0x0000555555555345 in test2 () at test.c:13
+#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
+#3  0x0000555555555471 in main () at test.c:30
+TESTx
+FILE test.c
+LINE 17
+PASS 1
+TYPE 2
+EXPECT 10
+RESULT 3
+BACKTRACE
+#0  gunit_range_hook (expected=..., result=..., line_number=..., file=..., greater=...) at ../GUnit.h:21
+#1  0x0000555555555375 in test3 () at test.c:17
+#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
+#3  0x0000555555555471 in main () at test.c:30
+TESTx
+FILE test.c
+LINE 21
+PASS 0
+TYPE 2
+EXPECT 100
+RESULT 100
+BACKTRACE
+#0  gunit_range_hook (expected=..., result=..., line_number=..., file=..., greater=...) at ../GUnit.h:21
+#1  0x00005555555553a5 in test4 () at test.c:21
+#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
+#3  0x0000555555555471 in main () at test.c:30
+TESTx
+FILE test.c
+LINE 25
+PASS 0
+TYPE 2
+EXPECT 100
+RESULT 20
+BACKTRACE
+#0  gunit_range_hook (expected=..., result=..., line_number=..., file=..., greater=...) at ../GUnit.h:21
+#1  0x00005555555553d5 in test5 () at test.c:25
+#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
+#3  0x0000555555555471 in main () at test.c:30

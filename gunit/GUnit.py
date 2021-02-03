@@ -66,13 +66,26 @@ class GUnit:
             caseparts = testcase.split("BACKTRACE")
 
             suite = re.search(r"FILE (.*)\n", caseparts[0]).group(1)
+            filename = re.search(r"(.*/)*(.*)", suite).group(2)
+            suite = re.search(r"(.*?)\..*", filename).group(1)
             line = re.search(r"LINE (\d+)", caseparts[0]).group(1)
             success = re.search(r"PASS (\d)", caseparts[0]).group(1)
-            expected = re.search(r"EXPECT (.+?)\n", caseparts[0]).group(1)
-            result = re.search(r"RESULT (.+?)\n", caseparts[0]).group(1)
 
-            function = re.search(r"in (?!gunit_hook|gunit_array)(.*) \(.*?\) at", caseparts[1]).group(1)
-            suite = re.search(r"(.*/)*(.*?)\..*", suite).group(2)
+            testtype = re.search(r"TYPE (\d+)", caseparts[0]).group(1)
+            fail_message = ""
+
+            function = None
+
+            if testtype == "0" or testtype == "2":
+                expected = re.search(r"EXPECT (.+?)\n", caseparts[0]).group(1)
+                result = re.search(r"RESULT (.+?)\n", caseparts[0]).group(1)
+
+                function = re.search(r"in (?!gunit_hook|gunit_array)(.*) \(.*?\) at", caseparts[1]).group(1)
+
+            if testtype == "1":
+                function = re.search(r".*?0x[0-9a-fA-F]+ <(.+?)>", caseparts[1]).group(1)
+
+                fail_message = "This test failed because one of its requirements failed"
 
             add = True
             tc = None
@@ -89,18 +102,30 @@ class GUnit:
             last_function = function
 
             if success != "1":
-                fail_message = ""
-                if expected != result:
-                    fail_message = f"Expected {expected}, received {result}"
+                if fail_message == "":
+                    if testtype == "2":
+                        if int(expected) > int(result):
+                            fail_message = f"Expected more than {expected}, received {result}"
 
-                else:
-                    fail_message = f"Did not expect {expected}"
+                        else:
+                            fail_message = f"Expected less than {expected}, received {result}"
+
+                    elif expected != result:
+                        fail_message = f"Expected {expected}, received {result}"
+
+                    else:
+                        fail_message = f"Did not expect {expected}"
+
+                # Add the offending line
+                fail_message += f" ({filename}: {line})"
 
                 # Failure means assertion fail, error means unexpected fault during the execution of the test
                 tc.add_failure_info(fail_message, caseparts[1])
 
             if add:
                 test_cases[suite] += [tc]
+
+
 
         test_suites = []
         for key in test_cases.keys():

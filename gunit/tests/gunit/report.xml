@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<testsuites disabled="0" errors="0" failures="4" tests="6" time="1.6315186023712158">
+	<testsuite disabled="0" errors="0" failures="4" name="test" skipped="0" tests="6" time="1.6315186023712158">
+		<testcase name="Test1" time="1.605818" classname="test0">
+			<failure type="failure" message="This test failed because one of its requirements failed (test.c: 29)">
+$1 = {void ()} 0x5555555552bc &lt;test0&gt;
+</failure>
+		</testcase>
+		<testcase name="Test2" time="0.004583" classname="test1"/>
+		<testcase name="Test3" time="0.004041" classname="test2">
+			<failure type="failure" message="Expected 4, received 3 (test.c: 13)">
+#0  gunit_hook (expected=..., result=..., line_number=..., file=..., no=...) at ../GUnit.h:13
+#1  0x0000555555555345 in test2 () at test.c:13
+#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
+#3  0x0000555555555471 in main () at test.c:30
+</failure>
+		</testcase>
+		<testcase name="Test4" time="0.004707" classname="test3"/>
+		<testcase name="Test5" time="0.006016" classname="test4">
+			<failure type="failure" message="Expected less than 100, received 100 (test.c: 21)">
+#0  gunit_range_hook (expected=..., result=..., line_number=..., file=..., greater=...) at ../GUnit.h:21
+#1  0x00005555555553a5 in test4 () at test.c:21
+#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
+#3  0x0000555555555471 in main () at test.c:30
+</failure>
+		</testcase>
+		<testcase name="Test6" time="0.006354" classname="test5">
+			<failure type="failure" message="Expected more than 100, received 20 (test.c: 25)">
+#0  gunit_range_hook (expected=..., result=..., line_number=..., file=..., greater=...) at ../GUnit.h:21
+#1  0x00005555555553d5 in test5 () at test.c:25
+#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
+#3  0x0000555555555471 in main () at test.c:30
+</failure>
+		</testcase>
+	</testsuite>
+</testsuites>
