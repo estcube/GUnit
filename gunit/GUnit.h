@@ -19,7 +19,7 @@ inline static bool gunit_hook(uintmax_t expected, uintmax_t result, uintmax_t li
  */
 __attribute__((optimize(0)))
 inline static bool gunit_range_hook(uintmax_t expected, uintmax_t result, uintmax_t line_number, const char *file, bool greater) {
-  return !greater && (expected > result) || greater && (expected < result);
+  return (!greater && (expected > result)) || (greater && (expected < result));
 }
 
 /**
@@ -91,7 +91,7 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
     sizeof((gunit_function_t[]){__VA_ARGS__}) / sizeof(gunit_function_t));}
 
 /**
- * Exevute tests without before or after
+ * Execute tests without before or after
  */
 #define GSIMPLE_EXECUTE(...) GEXECUTE(NULL, NULL, __VA_ARGS__)
 
@@ -101,9 +101,9 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
 #define GEND() {gunit_end();}
 
 /**
- * Assert if given values are equel.
+ * Assert if given values are equal.
  */
-#define GASSERT(expected, result)  {if (!gunit_hook((uintmax_t) expected, (uintmax_t) result, __LINE__, __FILE__, false)) return;}
+#define GASSERT(expected, result) {if (!gunit_hook((uintmax_t) expected, (uintmax_t) result, __LINE__, __FILE__, false)) return;}
 
 /**
  * Assert if given values are not equal.
@@ -143,7 +143,7 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
 /**
  * Asserts if the value is in between the given values
  */
-#define GINTERVAL_ASSERT(expectedhigh, expectedlow, result) {GLESS_ASSERT(expectedhigh, result); GGREATER_ASSERT(expectedlow, result);}
+#define GINTERVAL_ASSERT(expectedlow, expectedhigh, result) {GLESS_ASSERT(expectedhigh, result); GGREATER_ASSERT(expectedlow, result);}
 
 /**
  * Inline data for the test. Use this
