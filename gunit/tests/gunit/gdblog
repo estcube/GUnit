@@ -21,11 +21,11 @@ Reading /usr/lib/debug//lib/x86_64-linux-gnu/libc-2.31.so from remote target...
 Reading /usr/lib/debug//lib/x86_64-linux-gnu/libc-2.31.so from remote target...
 TESTx
 FILE test.c
-LINE 29
+LINE 30
 PASS 0
 TYPE 1
 BACKTRACE
-$1 = {void ()} 0x5555555552bc <test0>
+$1 = {void ()} 0x555555555325 <test0>
 TESTx
 FILE test.c
 LINE 9
@@ -35,9 +35,9 @@ EXPECT 5
 RESULT 5
 BACKTRACE
 #0  gunit_hook (expected=..., result=..., line_number=..., file=..., no=...) at ../GUnit.h:13
-#1  0x0000555555555315 in test1 () at test.c:9
-#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
-#3  0x0000555555555471 in main () at test.c:30
+#1  0x000055555555537e in test1 () at test.c:9
+#2  0x0000555555555300 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:80
+#3  0x0000555555555429 in main () at test.c:31
 TESTx
 FILE test.c
 LINE 13
@@ -47,42 +47,6 @@ EXPECT 4
 RESULT 3
 BACKTRACE
 #0  gunit_hook (expected=..., result=..., line_number=..., file=..., no=...) at ../GUnit.h:13
-#1  0x0000555555555345 in test2 () at test.c:13
-#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
-#3  0x0000555555555471 in main () at test.c:30
-TESTx
-FILE test.c
-LINE 17
-PASS 1
-TYPE 2
-EXPECT 10
-RESULT 3
-BACKTRACE
-#0  gunit_range_hook (expected=..., result=..., line_number=..., file=..., greater=...) at ../GUnit.h:21
-#1  0x0000555555555375 in test3 () at test.c:17
-#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
-#3  0x0000555555555471 in main () at test.c:30
-TESTx
-FILE test.c
-LINE 21
-PASS 0
-TYPE 2
-EXPECT 100
-RESULT 100
-BACKTRACE
-#0  gunit_range_hook (expected=..., result=..., line_number=..., file=..., greater=...) at ../GUnit.h:21
-#1  0x00005555555553a5 in test4 () at test.c:21
-#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
-#3  0x0000555555555471 in main () at test.c:30
-TESTx
-FILE test.c
-LINE 25
-PASS 0
-TYPE 2
-EXPECT 100
-RESULT 20
-BACKTRACE
-#0  gunit_range_hook (expected=..., result=..., line_number=..., file=..., greater=...) at ../GUnit.h:21
-#1  0x00005555555553d5 in test5 () at test.c:25
-#2  0x0000555555555297 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:73
-#3  0x0000555555555471 in main () at test.c:30
+#1  0x00005555555553ae in test2 () at test.c:13
+#2  0x0000555555555300 in gunit_suite (before=..., after=..., tests=..., nr_of_tests=...) at ../GUnit.h:80
+#3  0x0000555555555429 in main () at test.c:31

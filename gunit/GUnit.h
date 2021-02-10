@@ -57,6 +57,13 @@ inline static void gunit_fail(uintmax_t line_number, const char *file, const gun
  */
 __attribute__((optimize(0)))
 inline static void gunit_end() {
+  volatile bool x = false;
+  if (x) {
+    gunit_fail_hook(0, "0", NULL);
+    gunit_hook(0, 0, 0, "0", false);
+    gunit_range_hook(0, 0, 0, "0", false);
+  }
+
   return;
 }
 
