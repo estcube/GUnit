@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define typeof __typeof__
+
 typedef void (*gunit_function_t)();
 
 /**
@@ -10,7 +12,7 @@ typedef void (*gunit_function_t)();
  * and logs it
  */
 __attribute__((optimize(0)))
-inline static bool gunit_hook(uintmax_t expected, uintmax_t result, uintmax_t line_number, const char *file, bool no) {
+inline static bool gunit_hook(intmax_t expected, intmax_t result, intmax_t line_number, const char *file, bool no) {
   return (expected == result) ^ no;
 }
 
@@ -18,7 +20,7 @@ inline static bool gunit_hook(uintmax_t expected, uintmax_t result, uintmax_t li
  * Asserts for comparing ranges
  */
 __attribute__((optimize(0)))
-inline static bool gunit_range_hook(uintmax_t expected, uintmax_t result, uintmax_t line_number, const char *file, bool greater) {
+inline static bool gunit_range_hook(intmax_t expected, intmax_t result, intmax_t line_number, const char *file, bool greater) {
   return (!greater && (expected > result)) || (greater && (expected < result));
 }
 
@@ -26,7 +28,7 @@ inline static bool gunit_range_hook(uintmax_t expected, uintmax_t result, uintma
  * Function for asserting arrays and objects
  */
 __attribute__((optimize(0)))
-inline static bool gunit_array(void *expected, void *result, uintmax_t size, uintmax_t line_number, const char *file, bool no) {
+inline static bool gunit_array(void *expected, void *result, intmax_t size, intmax_t line_number, const char *file, bool no) {
   uint8_t *ex = (uint8_t *) expected;
   uint8_t *re = (uint8_t *) result;
 
@@ -37,17 +39,17 @@ inline static bool gunit_array(void *expected, void *result, uintmax_t size, uin
   }
 
   // If no differences were found
-  return gunit_hook((uintmax_t) expected, (uintmax_t) result, line_number, file, !no);
+  return gunit_hook((intmax_t) expected, (intmax_t) result, line_number, file, !no);
 }
 
 __attribute__((optimize(0)))
-inline static void gunit_fail_hook(uintmax_t line_number, const char *file, const gunit_function_t test) {
+inline static void gunit_fail_hook(intmax_t line_number, const char *file, const gunit_function_t test) {
   return;
 }
 
 __attribute__((optimize(0)))
-inline static void gunit_fail(uintmax_t line_number, const char *file, const gunit_function_t *tests, uintmax_t nr_of_tests) {
-  for (uintmax_t i = 0; i < nr_of_tests; ++i) {
+inline static void gunit_fail(intmax_t line_number, const char *file, const gunit_function_t *tests, intmax_t nr_of_tests) {
+  for (intmax_t i = 0; i < nr_of_tests; ++i) {
     gunit_fail_hook(line_number, file, tests[i]);
   }
 }
@@ -72,8 +74,8 @@ inline static void gunit_end() {
  */
 __attribute__((optimize(0)))
 inline static void gunit_suite(gunit_function_t before, gunit_function_t after, const gunit_function_t *tests,
-                               uintmax_t nr_of_tests) {
-  for (uintmax_t i = 0; i < nr_of_tests; ++i) {
+                               intmax_t nr_of_tests) {
+  for (intmax_t i = 0; i < nr_of_tests; ++i) {
     if (before)
       (*before)();
 
@@ -91,7 +93,7 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
     sizeof((gunit_function_t[]){__VA_ARGS__}) / sizeof(gunit_function_t));}
 
 /**
- * Execute tests without before or after
+ * Exevute tests without before or after
  */
 #define GSIMPLE_EXECUTE(...) GEXECUTE(NULL, NULL, __VA_ARGS__)
 
@@ -101,14 +103,14 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
 #define GEND() {gunit_end();}
 
 /**
- * Assert if given values are equal.
+ * Assert if given values are equel.
  */
-#define GASSERT(expected, result) {if (!gunit_hook((uintmax_t) expected, (uintmax_t) result, __LINE__, __FILE__, false)) return;}
+#define GASSERT(expected, result)  {if (!gunit_hook((intmax_t) expected, (intmax_t) result, __LINE__, __FILE__, false)) return;}
 
 /**
  * Assert if given values are not equal.
  */
-#define GNOT_ASSERT(not_expected, result) {if (!gunit_hook((uintmax_t) not_expected, (uintmax_t) result, __LINE__, __FILE__, true)) return;}
+#define GNOT_ASSERT(not_expected, result) {if (!gunit_hook((intmax_t) not_expected, (intmax_t) result, __LINE__, __FILE__, true)) return;}
 
 /**
  * Assert if given arrays contain same elements
@@ -143,7 +145,7 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
 /**
  * Asserts if the value is in between the given values
  */
-#define GINTERVAL_ASSERT(expectedlow, expectedhigh, result) {GLESS_ASSERT(expectedhigh, result); GGREATER_ASSERT(expectedlow, result);}
+#define GINTERVAL_ASSERT(expectedhigh, expectedlow, result) {GLESS_ASSERT(expectedhigh, result); GGREATER_ASSERT(expectedlow, result);}
 
 /**
  * Inline data for the test. Use this
@@ -156,3 +158,4 @@ inline static void gunit_suite(gunit_function_t before, gunit_function_t after, 
  */
 #define GFAIL(...) {gunit_fail(__LINE__, __FILE__, (const gunit_function_t[]){__VA_ARGS__}, \
                     sizeof((gunit_function_t[]){__VA_ARGS__}) / sizeof(gunit_function_t));}
+
