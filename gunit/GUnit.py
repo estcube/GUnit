@@ -1,10 +1,12 @@
 import os
 import re
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from junit_xml import TestSuite, TestCase
 
 module_dir = os.path.abspath(os.path.dirname(__file__))
+
+Suite = namedtuple('Suite', 'name tests msgs fails times lines')
 
 class GUnit:
     def __init__(self, build_dir='.', executable='gdb'):
@@ -14,7 +16,6 @@ class GUnit:
         os.makedirs(self.build_dir, exist_ok=True)
 
         self.logging_file = os.path.join(self.build_dir, 'gdblog')
-        self.times_file = os.path.join(self.build_dir, 'gdbtimes')
         self.report_file = os.path.join(self.build_dir, 'report.xml')
 
         self.log = f'-ex "set logging file {self.logging_file}"'
@@ -29,8 +30,6 @@ class GUnit:
         setup_path = os.path.join(module_dir, 'setup.gdb')
         execute_path = os.path.join(module_dir, 'execute.gdb')
 
-        os.environ["GUNIT_GDBTIMES"] = self.times_file
-
         # Activate GDB and connect to server
         command = f'{self.gdb} -batch-silent {self.log} -x {setup_path} {self.remote} '
 
@@ -42,97 +41,64 @@ class GUnit:
         os.system(command)
 
     def junit(self):
-        cases = []
+        suites = []
 
         with open(self.logging_file, "r") as gdblog:
-            cases = gdblog.read().split("TESTx")
+            lines = gdblog.readlines()
 
-        test_cases = defaultdict(lambda: [])
-        test_no = defaultdict(lambda: 1)
+            suites_raw = []
+            for line in lines:
+                if line[0] == '$':
+                    suites_raw += [line]
 
-        last_function = None
+            data = [None] * 6
+            data_i = 0
+            for sr in suites_raw:
+                data[data_i] = sr.split(" = ")[1][0:-1]
+                if data_i != 0:
+                    data[data_i] = data[data_i][1:-1]
 
-        deltas = []
+                if data_i == 5:
+                    suite_name = data[0][1:-1]
+                    suite_tests = re.sub(r'("| *)', '', data[1]).split(',')
+                    suite_messages = re.sub(r'"', '', data[2]).split(',')
+                    suite_fails = re.sub(r'("| *)', '', data[3]).split(',')
+                    suite_elapsed = re.sub(r' *', '', data[4]).split(',')
+                    suite_lines = re.sub(r' *', '', data[5]).split(',')
 
-        with open(self.times_file, "r") as test_times:
-            # Get deltas
-            times = test_times.readlines()
-            for i in range(int(len(times) / 2)):
-                start_time = float(times[2 * i])
-                end_time = float(times[2 * i + 1])
-                deltas += [end_time - start_time]
+                    suites += [Suite(suite_name, suite_tests, suite_messages, suite_fails, suite_elapsed, suite_lines)]
 
-        for i, testcase in enumerate(cases[1:]):
-            caseparts = testcase.split("BACKTRACE")
+                    data_i = 0
 
-            suite = re.search(r"FILE (.*)\n", caseparts[0]).group(1)
-            filename = re.search(r"(.*/)*(.*)", suite).group(2)
-            suite = re.search(r"(.*?)\..*", filename).group(1)
-            line = re.search(r"LINE (\d+)", caseparts[0]).group(1)
-            success = re.search(r"PASS (\d)", caseparts[0]).group(1)
-
-            testtype = re.search(r"TYPE (\d+)", caseparts[0]).group(1)
-            fail_message = ""
-
-            function = None
-
-            if testtype == "0" or testtype == "2":
-                expected = re.search(r"EXPECT (.+?)\n", caseparts[0]).group(1)
-                result = re.search(r"RESULT (.+?)\n", caseparts[0]).group(1)
-
-                function = re.search(r"in (?!gunit_hook|gunit_array)(.*) \(.*?\) at", caseparts[1]).group(1)
-
-            if testtype == "1":
-                function = re.search(r".*?0x[0-9a-fA-F]+ <(.+?)>", caseparts[1]).group(1)
-
-                fail_message = "This test failed because one of its requirements failed"
-
-            add = True
-            tc = None
-
-            if last_function != function:
-                tc = TestCase(f"Test{test_no[suite]}", function, deltas[i], "", "", allow_multiple_subelements=True)
-                test_no[suite] += 1
-
-            else:
-                tc = test_cases[suite][-1]
-                tc.elapsed_sec += deltas[i]
-                add = False
-
-            last_function = function
-
-            if success != "1":
-                if fail_message == "":
-                    if testtype == "2":
-                        if int(expected) > int(result):
-                            fail_message = f"Expected more than {expected}, received {result}"
-
-                        else:
-                            fail_message = f"Expected less than {expected}, received {result}"
-
-                    elif expected != result:
-                        fail_message = f"Expected {expected}, received {result}"
-
-                    else:
-                        fail_message = f"Did not expect {expected}"
-
-                # Add the offending line
-                fail_message += f" ({filename}: {line})"
-
-                # Failure means assertion fail, error means unexpected fault during the execution of the test
-                tc.add_failure_info(fail_message, caseparts[1])
-
-            if add:
-                test_cases[suite] += [tc]
-
-
+                data_i += 1
 
         test_suites = []
-        for key in test_cases.keys():
-            test_suites += [TestSuite(key, test_cases[key])]
+        for suitei, suite in enumerate(suites):
+            suite_name = suite.name
+
+            # Get the number of test cases in the suite
+            testn = len(suite.tests)
+
+            # Create a test case for each test
+            cases = []
+            for testi in range(testn):
+                name = suite.tests[testi]
+                message = suite.msgs[testi]
+                fail = suite.fails[testi] == 'true'
+                elapsed = suite.times[testi]
+                fline = suite.lines[testi]
+
+                tc = TestCase(name, suite_name, float(elapsed), "", "", allow_multiple_subelements=True)
+
+                if fail:
+                    tc.add_failure_info(f"Affirmation failed at {suite_name}:{fline} with the following message: {message}")
+
+                cases += [tc]
+
+            test_suites += [TestSuite(suite_name, cases)]
 
         with open(self.report_file, "w") as outxml:
-                outxml.write(TestSuite.to_xml_string(test_suites))
+            outxml.write(TestSuite.to_xml_string(test_suites))
 
     #### STATIC FUNCTIONS ####
 

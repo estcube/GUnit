@@ -1,161 +1,241 @@
 #pragma once
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
 
-#define typeof __typeof__
+#pragma GCC push_options
+#pragma GCC optimize ("-O0")
 
-typedef void (*gunit_function_t)();
+#include <string>
+#include <list>
+#include <concepts>
+#include <functional>
+#include <chrono>
 
-/**
- * All asserts will call this function. GDB will catch any call to this function
- * and logs it
- */
-__attribute__((optimize(0)))
-inline static bool gunit_hook(intmax_t expected, intmax_t result, intmax_t line_number, const char *file, bool no) {
-  return (expected == result) ^ no;
-}
+#include <cstdint>
+#include <cstring>
+#include <csetjmp>
 
-/**
- * Asserts for comparing ranges
- */
-__attribute__((optimize(0)))
-inline static bool gunit_range_hook(intmax_t expected, intmax_t result, intmax_t line_number, const char *file, bool greater) {
-  return (!greater && (expected > result)) || (greater && (expected < result));
-}
+// For string literals ""s
+using namespace std::literals;
 
-/**
- * Function for asserting arrays and objects
- */
-__attribute__((optimize(0)))
-inline static bool gunit_array(void *expected, void *result, intmax_t size, intmax_t line_number, const char *file, bool no) {
-  uint8_t *ex = (uint8_t *) expected;
-  uint8_t *re = (uint8_t *) result;
+namespace gunit {
 
-  // Check if equal
-  for (uint32_t i = 0; i < size; ++i) {
-    if (ex[i] != re[i])
-      return gunit_hook(ex[i], re[i], line_number, file, no);
+struct test;
+
+static std::list<test*> tests_ = std::list<test*>();
+static test *current_ = nullptr;
+static jmp_buf jump_env_;
+
+struct test {
+public:
+  const std::string name;
+  const std::function<void()> routine;
+  bool failed = false;
+  std::string reason = "";
+  float elapsed = 0.0f;
+  uint32_t location = 0;
+
+  test(std::string name, const std::function<void()> routine) : name(name), routine(routine) {
+    tests_.push_back(this);
+  }
+};
+
+template<typename T>
+concept numeric = std::integral<T> || std::floating_point<T>;
+
+template<typename T>
+concept iterable = requires(T container) {
+  { container.begin() } -> std::iterator;
+  { container.end() } -> std::iterator;
+};
+
+template<typename T>
+struct affirm {
+protected:
+  const T val;
+  const size_t size;
+  const int line;
+
+  void fail(const std::string &reason) const noexcept {
+    current_->failed = true;
+    current_->reason = reason;
+    current_->location = this->line;
+
+    // Exit the test
+    longjmp(jump_env_, 1);
   }
 
-  // If no differences were found
-  return gunit_hook((intmax_t) expected, (intmax_t) result, line_number, file, !no);
-}
-
-__attribute__((optimize(0)))
-inline static void gunit_fail_hook(intmax_t line_number, const char *file, const gunit_function_t test) {
-  return;
-}
-
-__attribute__((optimize(0)))
-inline static void gunit_fail(intmax_t line_number, const char *file, const gunit_function_t *tests, intmax_t nr_of_tests) {
-  for (intmax_t i = 0; i < nr_of_tests; ++i) {
-    gunit_fail_hook(line_number, file, tests[i]);
-  }
-}
-
-/**
- * This has to be called at the end of a test suite
- */
-__attribute__((optimize(0)))
-inline static void gunit_end() {
-  volatile bool x = false;
-  if (x) {
-    gunit_fail_hook(0, "0", NULL);
-    gunit_hook(0, 0, 0, "0", false);
-    gunit_range_hook(0, 0, 0, "0", false);
+  constexpr std::string to_string(const T &arg) const noexcept requires numeric<T> {
+    return std::to_string(arg);
   }
 
-  return;
-}
-
-/**
- * Execute a test suite
- */
-__attribute__((optimize(0)))
-inline static void gunit_suite(gunit_function_t before, gunit_function_t after, const gunit_function_t *tests,
-                               intmax_t nr_of_tests) {
-  for (intmax_t i = 0; i < nr_of_tests; ++i) {
-    if (before)
-      (*before)();
-
-    (*tests[i])();
-
-    if (after)
-      (*after)();
+  constexpr std::string to_string(const T &arg) const noexcept {
+    return std::to_string((uintptr_t) &arg);
   }
+
+public:
+  constexpr affirm(T val, int line = __builtin_LINE()) noexcept : val(val), size(sizeof(val)), line(line) {}
+
+  bool operator ==(const affirm<T> &other) const noexcept requires iterable<T> {
+    if (std::equal(this->val, other.val))
+      return true;
+
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " == "s + this->to_string(other.val));
+    return false;
+  }
+
+  bool operator !=(const affirm<T> &other) const noexcept requires iterable<T> {
+    if (!std::equal(this->val, other.val))
+      return true;
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " != "s + this->to_string(other.val));
+    return false;
+  }
+
+  bool operator ==(const affirm<T> &other) const noexcept requires std::equality_comparable<T> {
+    if (this->val == other.val)
+      return true;
+
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " == "s + this->to_string(other.val));
+    return false;
+  }
+
+  bool operator !=(const affirm<T> &other) const noexcept requires std::equality_comparable<T> {
+    if (this->val != other.val)
+      return true;
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " != "s + this->to_string(other.val));
+    return false;
+  }
+
+  bool operator <(const affirm<T> &other) const noexcept requires std::totally_ordered<T> {
+    if (this->val < other.val)
+      return true;
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " < "s + this->to_string(other.val));
+    return false;
+  }
+
+  bool operator >(const affirm<T> &other) const noexcept requires std::totally_ordered<T> {
+    if (this->val > other.val)
+      return true;
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " > "s + this->to_string(other.val));
+    return false;
+  }
+
+  bool operator <=(const affirm<T> &other) const noexcept requires std::totally_ordered<T> {
+    if (this->val <= other.val)
+      return true;
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " <= "s + this->to_string(other.val));
+    return false;
+  }
+
+  bool operator >=(const affirm<T> &other) const noexcept requires std::totally_ordered<T> {
+    if (this->val >= other.val)
+      return true;
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " >= "s + this->to_string(other.val));
+    return false;
+  }
+
+  bool operator ==(const affirm<T> &other) const noexcept {
+    if (0 == memcmp(&this->val, &other.val, this->size))
+      return true;
+
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " == "s + this->to_string(other.val));
+    return false;
+  }
+
+  bool operator !=(const affirm<T> &other) const noexcept {
+    if (0 != memcmp(&this->val, &other.val, this->size))
+      return true;
+
+    this->fail("Assertion fail: "s + this->to_string(this->val) + " != "s + this->to_string(other.val));
+    return false;
+  }
+};
+
+namespace suite {
+  /**
+   * Fails all the tests in the suite
+   */
+  static inline void fail(std::string reason) noexcept {
+    for (test *tes: tests_) {
+      tes->failed = true;
+      tes->reason = reason;
+    }
+  }
+
+  /**
+   * Runs all the tests in the suite
+   */
+  static inline void run(const std::function<void()> before, const std::function<void()> after, const std::function<void()> onfail, const char *suite = __builtin_FILE()) noexcept {
+    int jump_val = 0;
+
+start:
+
+    for (test *tes: tests_) {
+      // Update the global state, so failed asserts can be logged and processed
+      current_ = tes;
+
+      auto start_time = std::chrono::high_resolution_clock::now();
+
+      before();
+
+      // When an assert fails, we return here, but isntead of jump_val being 0, it
+      // is 1. Therefore we don't rerun the test.
+      jump_val = setjmp(jump_env_);
+      if (jump_val == 0)
+        tes->routine();
+
+      // When this branch is selected, an assert failed
+      else
+        onfail();
+
+      after();
+
+      // Record the elapsed time
+      std::chrono::duration<float, std::milli> test_duration = std::chrono::high_resolution_clock::now() - start_time;
+      tes->elapsed = test_duration.count();
+    }
+
+    // Data collection
+    int n = tests_.size();
+    const char *test_name[n];
+    const char *test_reason[n];
+    bool test_failed[n];
+    float test_elapsed[n];
+    uint32_t test_location[n];
+
+    int i = 0;
+    for (test *test: tests_) {
+      test_name[i] = test->name.c_str();
+      test_failed[i] = test->failed;
+      test_reason[i] = test->reason.c_str();
+      test_elapsed[i] = test->elapsed;
+      test_location[i] = test->location;
+      i += 1;
+    }
+
+end:;
+  }
+
+  static inline void run(const std::function<void()> before, const std::function<void()> after, const char *suite = __builtin_FILE()) noexcept {
+    suite::run(before, after, [](){}, suite);
+  }
+
+  static inline void run(const char *suite = __builtin_FILE()) noexcept {
+    suite::run([](){}, [](){}, suite);
+  }
+} // namespace suite
+
+static inline void end() {
+  // Do nothing
 }
 
-/**
- * Execute given tests with before and after functions
- */
-#define GEXECUTE(before, after, ...)  {gunit_suite(before, after, (const gunit_function_t[]){__VA_ARGS__}, \
-    sizeof((gunit_function_t[]){__VA_ARGS__}) / sizeof(gunit_function_t));}
+} // namespace gunit
 
-/**
- * Exevute tests without before or after
- */
-#define GSIMPLE_EXECUTE(...) GEXECUTE(NULL, NULL, __VA_ARGS__)
-
-/**
- * Signal the end of all the tests
- */
-#define GEND() {gunit_end();}
-
-/**
- * Assert if given values are equel.
- */
-#define GASSERT(expected, result)  {if (!gunit_hook((intmax_t) expected, (intmax_t) result, __LINE__, __FILE__, false)) return;}
-
-/**
- * Assert if given values are not equal.
- */
-#define GNOT_ASSERT(not_expected, result) {if (!gunit_hook((intmax_t) not_expected, (intmax_t) result, __LINE__, __FILE__, true)) return;}
-
-/**
- * Assert if given arrays contain same elements
- */
-#define GARRAY_ASSERT(expected, result, nr_of_elements) {for (int __gi = 0; __gi < nr_of_elements; ++__gi) {if (!gunit_array((void *) expected, (void *) result, nr_of_elements * sizeof(typeof(expected[0])), __LINE__, __FILE__, false)) return;}}
-
-/**
- * Assert if given arrays don't have same elements
- */
-#define GARRAY_NOT_ASSERT(not_expected, result, nr_of_elements) {for (int __gi = 0; __gi < nr_of_elements; ++__gi) {if (!gunit_array((void *) not_expected, (void *) result, nr_of_elements * sizeof(typeof(not_expected[0])), __LINE__, __FILE__, true)) return;}}
-
-/**
- * Assert if given structs contain same values
- */
-#define GSTRUCT_ASSERT(expected, result) {if (!gunit_array((void *) &expected, (void *) &result, sizeof(typeof(expected)), __LINE__, __FILE__, false)) return;}
-
-/**
- * Assert if given structs don't contain same values
- */
-#define GSTRUCT_NOT_ASSERT(not_expected, result) {if (!gunit_array((void *) &not_expected, (void *) &result, sizeof(typeof(not_expected)), __LINE__, __FILE__, true)) return;}
-
-/**
- * Asserts if the value is less than expected
- */
-#define GLESS_ASSERT(expected, result) {if (!gunit_range_hook(expected, result, __LINE__, __FILE__, false)) return;}
-
-/**
- * Asserts if the value is greater than expected
- */
-#define GGREATER_ASSERT(expected, result) {if (!gunit_range_hook(expected, result, __LINE__, __FILE__, true)) return;}
-
-/**
- * Asserts if the value is in between the given values
- */
-#define GINTERVAL_ASSERT(expectedhigh, expectedlow, result) {GLESS_ASSERT(expectedhigh, result); GGREATER_ASSERT(expectedlow, result);}
-
-/**
- * Inline data for the test. Use this
- * to give arguments to your test.
- */
-#define GINLINE_DATA(name, test, ...) static void name() {test(__VA_ARGS__);}
-
-/**
- * Fail the given tests
- */
-#define GFAIL(...) {gunit_fail(__LINE__, __FILE__, (const gunit_function_t[]){__VA_ARGS__}, \
-                    sizeof((gunit_function_t[]){__VA_ARGS__}) / sizeof(gunit_function_t));}
-
+#pragma GCC pop_options
