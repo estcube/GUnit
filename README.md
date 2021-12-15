@@ -24,31 +24,92 @@ gunit.test("test.elf")
 gunit.junit()
 ```
 
-Here you can see a simple example of the .c file that could be used with the python example above.
-```c
-#include "GUnit.h"
-#include "foo.h"
+Here you can see a simple example of the .cpp file that could be used with the python example above.
+```cpp
+#include "GUnit.hpp"
 
-void test1() {
-    GASSERT(5, foo_getfive());
-}
+gunit::test t1(
+  "test1",                  // Name of the test case
+  [](){                     // Lambda expression
+    gunit::affirm(20) > 10; // The test case to check
+  }
+);
 
-void before() {
-    foo_init();
-}
+gunit::test t2("test2", [](){
+  gunit::affirm(10) > 20;
+  gunit::affirm(11) > 20;
+});
 
-void after() {
-    foo_deinit();
-}
+gunit::test t3("test3", [](){
+  std::list l1 = std::list<int>();
+  l1.push_back(10);
+  l1.push_back(12);
+  l1.push_back(14);
+
+  std::list l2 = std::list<int>();
+  l2.push_back(10);
+  l2.push_back(12);
+  l2.push_back(14);
+
+  gunit::affirm(l1) == l2;
+});
+
+gunit::test t4("test4", [](){
+  std::list l1 = std::list<int>();
+  l1.push_back(10);
+  l1.push_back(12);
+  l1.push_back(14);
+
+  std::list l2 = std::list<int>();
+  l2.push_back(10);
+  l2.push_back(22);
+  l2.push_back(34);
+
+  gunit::affirm(l1) == l2;
+});
+
+gunit::test t5("test5", [](){
+  struct a {
+    int b;
+    char c;
+    char d;
+    char e;
+    char f;
+  };
+
+  struct a one(10, 'a', 'e', 'i', 'o');
+  struct a two(10, 'a', 'e', 'i', 'o');
+
+  gunit::affirm(one) == two;
+});
+
+gunit::test t6("test6", [](){
+  struct a {
+    int b;
+    char c;
+    char d;
+    char e;
+    char f;
+  };
+
+  struct a one(10, 'a', 'e', 'i', 'o');
+  struct a two(22, 'x', 'e', 'o', 'm');
+
+  gunit::affirm(one) == two;
+});
+
+gunit::test t7("test7", [](){
+  gunit::affirm(10) > 5;
+  gunit::affirm(10) >= 10;
+  gunit::affirm(10) <= 10;
+  gunit::affirm(10) <= 15;
+  gunit::affirm(1.0) == 1.0;
+  gunit::affirm(2.0) != 1.0;
+});
 
 int main() {
-    // This is for executing a test suite (a collection of tests) with before and after functions.
-    GEXECUTE(before, after, test1);
-
-    // This macro has to be called at the end of the test program.
-    GEND();
-
-    // Block forever so we don't go into undefined memory regions
-    while(true);
+  gunit::suite::run(); // The test are added into the global test list on creation of the test struct
+  gunit::end();        // Signal the end of the unit test
+  while(1);
 }
 ```
