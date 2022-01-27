@@ -1,7 +1,13 @@
 # GUnit
-App for executing unit tests using GDB.
+App for executing C/C++ unit tests using GDB.
 
 Documentation: https://github.com/estcube/GUnit/wiki/Documentation
+## Installation
+The easiest way to install Gunit is through pip: https://pypi.org/project/gunit/
+
+```bash
+pip install gunit
+```
 
 ## Example
 For example if OpenOCD is used as GDB server and we are testing on an ARM chip.
