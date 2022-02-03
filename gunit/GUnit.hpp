@@ -28,12 +28,13 @@ struct test {
 public:
   const std::string name;
   const std::function<void()> routine;
+  const uint32_t key;
   bool failed = false;
   std::string reason = "";
   float elapsed = 0.0f;
   uint32_t location = 0;
 
-  test(std::string name, const std::function<void()> routine) : name(name), routine(routine) {
+  test(std::string name, const std::function<void()> routine, uint32_t key = ~0U) : name(name), routine(routine), key(key) {
     tests_.push_back(this);
   }
 };
@@ -72,7 +73,13 @@ protected:
   }
 
 public:
-  constexpr affirm(T val, int line = __builtin_LINE()) noexcept : val(val), size(sizeof(val)), line(line) {}
+  //constexpr affirm(T val, int line = __builtin_LINE()) noexcept : val(val), size(sizeof(val)), line(line) {}
+
+  //constexpr affirm(T val, size_t size, int line = __builtin_LINE()) noexcept : val(val), size(size), line(line) {}
+
+  constexpr affirm(const T val, int line = __builtin_LINE()) noexcept : val(val), size(sizeof(val)), line(line) {}
+
+  constexpr affirm(const T val, size_t size, int line = __builtin_LINE()) noexcept : val(val), size(size), line(line) {}
 
   bool operator ==(const affirm<T> &other) const noexcept requires iterable<T> {
     if (std::equal(this->val, other.val))
@@ -162,8 +169,11 @@ namespace suite {
   /**
    * Fails all the tests in the suite
    */
-  static inline void fail(std::string reason) noexcept {
+  static inline void fail(std::string reason, uint32_t key = ~0U) noexcept {
     for (test *tes: tests_) {
+      if (key != ~0U && tes->key != key)
+        continue;
+
       tes->failed = true;
       tes->reason = reason;
     }
@@ -172,30 +182,34 @@ namespace suite {
   /**
    * Runs all the tests in the suite
    */
-  static inline void run(const std::function<void()> before, const std::function<void()> after, const std::function<void()> onfail, const char *suite = __builtin_FILE()) noexcept {
+  static inline void run(const std::function<void()> before, const std::function<void()> after, const std::function<void()> onfail, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
     int jump_val = 0;
 
 start:
 
     for (test *tes: tests_) {
+      // Only execute unit tests with specified key
+      if (key != ~0U && tes->key != key)
+        continue;
+
       // Update the global state, so failed asserts can be logged and processed
       current_ = tes;
 
       auto start_time = std::chrono::high_resolution_clock::now();
 
-      before();
-
       // When an assert fails, we return here, but isntead of jump_val being 0, it
       // is 1. Therefore we don't rerun the test.
       jump_val = setjmp(jump_env_);
-      if (jump_val == 0)
+      if (jump_val == 0) {
+        before();
         tes->routine();
+        after();
+      }
 
       // When this branch is selected, an assert failed
       else
         onfail();
 
-      after();
 
       // Record the elapsed time
       std::chrono::duration<float, std::milli> test_duration = std::chrono::high_resolution_clock::now() - start_time;
@@ -223,12 +237,12 @@ start:
 end:;
   }
 
-  static inline void run(const std::function<void()> before, const std::function<void()> after, const char *suite = __builtin_FILE()) noexcept {
-    suite::run(before, after, [](){}, suite);
+  static inline void run(const std::function<void()> before, const std::function<void()> after, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
+    suite::run(before, after, [](){}, key, suite);
   }
 
-  static inline void run(const char *suite = __builtin_FILE()) noexcept {
-    suite::run([](){}, [](){}, suite);
+  static inline void run(uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
+    suite::run([](){}, [](){}, key, suite);
   }
 } // namespace suite
 

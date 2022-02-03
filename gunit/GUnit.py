@@ -31,12 +31,12 @@ class GUnit:
         execute_path = os.path.join(module_dir, 'execute.gdb')
 
         # Activate GDB and connect to server
-        command = f'{self.gdb} -batch-silent {self.log} -x {setup_path} {self.remote} '
+        command = f'{self.gdb} -batch-silent {self.log} -x {setup_path} '
 
         if path is not None:
-            command += f'-ex "file {path}" {self.load} '
+            command += f'-ex "file {path}" '
 
-        command += f'-x {execute_path}'
+        command += f' {self.remote} {self.load} -x {execute_path}'
 
         os.system(command)
 
@@ -104,8 +104,8 @@ class GUnit:
 
     # Generate GUnit.h
     def get_header(build_dir='.'):
-        source_path = os.path.join(module_dir, 'GUnit.h')
-        destination_path = os.path.abspath(os.path.join(build_dir, 'GUnit.h'))
+        source_path = os.path.join(module_dir, 'GUnit.hpp')
+        destination_path = os.path.abspath(os.path.join(build_dir, 'GUnit.hpp'))
 
         with open(source_path, "r") as src, open(destination_path, "w") as dst:
             dst.write(src.read())
@@ -114,7 +114,7 @@ class GUnit:
     def openOCD(gdb_uri, build_dir='.', executable='gdb'):
         target = GUnit(build_dir, executable)
 
-        target.remote = f'-ex "target remote {gdb_uri}"'
+        target.remote = f'-ex "target extended-remote {gdb_uri}"'
         target.load = '-ex load -ex "monitor reset init"'
 
         return target
@@ -123,6 +123,6 @@ class GUnit:
     def gdbserver(gdb_uri, build_dir='.'):
         target = GUnit(build_dir)
 
-        target.remote = f'-ex "target remote {gdb_uri}"'
+        target.remote = f'-ex "target extended-remote {gdb_uri}"'
 
         return target
