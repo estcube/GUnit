@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <cstring>
 #include <csetjmp>
+#include <cstdarg>
 
 // For string literals ""s
 using namespace std::literals;
@@ -20,12 +21,14 @@ namespace gunit {
 
 struct test;
 
+static uint32_t running_index = 0;
 static std::list<test*> tests_ = std::list<test*>();
 static test *current_ = nullptr;
 static jmp_buf jump_env_;
 
 struct test {
 public:
+  const uint32_t index;
   const std::string name;
   const std::function<void()> routine;
   const uint32_t key;
@@ -34,8 +37,9 @@ public:
   float elapsed = 0.0f;
   uint32_t location = 0;
 
-  test(std::string name, const std::function<void()> routine, uint32_t key = ~0U) : name(name), routine(routine), key(key) {
+  test(std::string name, const std::function<void()> routine, uint32_t key = ~0U) : index(running_index), name(name), routine(routine), key(key) {
     tests_.push_back(this);
+    running_index += 1;
   }
 };
 
@@ -73,10 +77,6 @@ protected:
   }
 
 public:
-  //constexpr affirm(T val, int line = __builtin_LINE()) noexcept : val(val), size(sizeof(val)), line(line) {}
-
-  //constexpr affirm(T val, size_t size, int line = __builtin_LINE()) noexcept : val(val), size(size), line(line) {}
-
   constexpr affirm(const T val, int line = __builtin_LINE()) noexcept : val(val), size(sizeof(val)), line(line) {}
 
   constexpr affirm(const T val, size_t size, int line = __builtin_LINE()) noexcept : val(val), size(size), line(line) {}
@@ -185,12 +185,17 @@ namespace suite {
   static inline void run(const std::function<void()> before, const std::function<void()> after, const std::function<void()> onfail, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
     int jump_val = 0;
 
+    bool executed_tests[tests_.size()] = {false};
+
 start:
 
     for (test *tes: tests_) {
       // Only execute unit tests with specified key
       if (key != ~0U && tes->key != key)
         continue;
+
+      // Indicate that this test was tested
+      executed_tests[tes->index] = true;
 
       // Update the global state, so failed asserts can be logged and processed
       current_ = tes;
@@ -217,7 +222,12 @@ start:
     }
 
     // Data collection
-    int n = tests_.size();
+    int n = 0;
+    for (bool tested: executed_tests) {
+      if (tested)
+        n += 1;
+    }
+
     const char *test_name[n];
     const char *test_reason[n];
     bool test_failed[n];
@@ -225,13 +235,17 @@ start:
     uint32_t test_location[n];
 
     int i = 0;
-    for (test *test: tests_) {
-      test_name[i] = test->name.c_str();
-      test_failed[i] = test->failed;
-      test_reason[i] = test->reason.c_str();
-      test_elapsed[i] = test->elapsed;
-      test_location[i] = test->location;
-      i += 1;
+    int j = 0;
+    for (test *tes: tests_) {
+      if (executed_tests[j]) {
+        test_name[i] = tes->name.c_str();
+        test_failed[i] = tes->failed;
+        test_reason[i] = tes->reason.c_str();
+        test_elapsed[i] = tes->elapsed;
+        test_location[i] = tes->location;
+        ++i;
+      }
+      ++j;
     }
 
 end:;

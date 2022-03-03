@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='gunit',
-        version = '0.1.48',
+        version = '0.1.51',
         description = 'App for unit testing with GDB',
         long_description = readme(),
         long_description_content_type = 'text/markdown',

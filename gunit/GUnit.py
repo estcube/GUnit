@@ -41,7 +41,12 @@ class GUnit:
         os.system(command)
 
     def junit(self):
-        suites = []
+        snames = set()
+        stests = defaultdict(lambda: [])
+        smessages = defaultdict(lambda: [])
+        sfails = defaultdict(lambda: [])
+        selapsed = defaultdict(lambda: [])
+        slines = defaultdict(lambda: [])
 
         with open(self.logging_file, "r") as gdblog:
             lines = gdblog.readlines()
@@ -51,8 +56,9 @@ class GUnit:
                 if line[0] == '$':
                     suites_raw += [line]
 
-            data = [None] * 6
+            data = [None for _ in range(6)]
             data_i = 0
+
             for sr in suites_raw:
                 data[data_i] = sr.split(" = ")[1][0:-1]
                 if data_i != 0:
@@ -60,17 +66,37 @@ class GUnit:
 
                 if data_i == 5:
                     suite_name = data[0][1:-1]
-                    suite_tests = re.sub(r'("| *)', '', data[1]).split(',')
+                    suite_tests = re.sub(r'"', '', data[1]).split(',')
                     suite_messages = re.sub(r'"', '', data[2]).split(',')
                     suite_fails = re.sub(r'("| *)', '', data[3]).split(',')
                     suite_elapsed = re.sub(r' *', '', data[4]).split(',')
                     suite_lines = re.sub(r' *', '', data[5]).split(',')
 
-                    suites += [Suite(suite_name, suite_tests, suite_messages, suite_fails, suite_elapsed, suite_lines)]
+                    # Make it more beautiful
+                    for i in range(len(suite_tests)):
+                        if len(suite_tests[i]) > 0 and suite_tests[i][0] == ' ':
+                            suite_tests[i] = suite_tests[i][1:]
+
+                    for i in range(len(suite_messages)):
+                        if len(suite_messages[i]) > 0 and suite_messages[i][0] == ' ':
+                            suite_messages[i] = suite_messages[i][1:]
+
+                    snames.add(suite_name)
+                    stests[suite_name] += suite_tests
+                    smessages[suite_name] += suite_messages
+                    sfails[suite_name] += suite_fails
+                    selapsed[suite_name] += suite_elapsed
+                    slines[suite_name] += suite_lines
 
                     data_i = 0
 
-                data_i += 1
+                else:
+                    data_i += 1
+
+        suites = []
+
+        for sn in snames:
+            suites += [Suite(sn, stests[sn], smessages[sn], sfails[sn], selapsed[sn], slines[sn])]
 
         test_suites = []
         for suitei, suite in enumerate(suites):
