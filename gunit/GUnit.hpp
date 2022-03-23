@@ -21,12 +21,12 @@ namespace gunit {
 
 struct test;
 
-static uint32_t running_index = 0;
-static std::list<test*> tests_ = std::list<test*>();
 static test *current_ = nullptr;
 static jmp_buf jump_env_;
 
 struct test {
+  static inline uint32_t running_index = 0;
+
 public:
   const uint32_t index;
   const std::string name;
@@ -36,21 +36,33 @@ public:
   std::string reason = "";
   float elapsed = 0.0f;
   uint32_t location = 0;
+  const char *suite;
 
-  test(std::string name, const std::function<void()> routine, uint32_t key = ~0U) : index(running_index), name(name), routine(routine), key(key) {
-    tests_.push_back(this);
+  static inline std::list<test*> tests = std::list<test*>();
+
+  test(std::string name, const std::function<void()> routine, uint32_t key = ~0U, const char *suite = __builtin_FILE()) : index(running_index), name(name), routine(routine), key(key), suite(suite) {
+    tests.push_back(this);
     running_index += 1;
   }
 };
 
 template<typename T>
-concept numeric = std::integral<T> || std::floating_point<T>;
+concept numeric = std::integral<T> || std::floating_point<T> || std::is_enum_v<T>;
 
 template<typename T>
 concept iterable = requires(T container) {
   { container.begin() } -> std::iterator;
   { container.end() } -> std::iterator;
 };
+
+static void fail(const std::string &reason, int line = __builtin_LINE()) {
+  current_->failed = true;
+  current_->reason = reason;
+  current_->location = line;
+
+  // Exit the test
+  longjmp(jump_env_, 1);
+}
 
 template<typename T>
 struct affirm {
@@ -169,9 +181,9 @@ namespace suite {
   /**
    * Fails all the tests in the suite
    */
-  static inline void fail(std::string reason, uint32_t key = ~0U) noexcept {
-    for (test *tes: tests_) {
-      if (key != ~0U && tes->key != key)
+  static inline void fail(std::string reason, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
+    for (test *tes: test::tests) {
+      if ((key != ~0U && tes->key != key) || tes->suite != suite)
         continue;
 
       tes->failed = true;
@@ -185,17 +197,25 @@ namespace suite {
   static inline void run(const std::function<void()> before, const std::function<void()> after, const std::function<void()> onfail, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
     int jump_val = 0;
 
-    bool executed_tests[tests_.size()] = {false};
+    if (test::tests.size() == 0)
+      return;
+
+    bool executed_tests[test::tests.size()] = {false};
 
 start:
 
-    for (test *tes: tests_) {
+    for (test *tes: test::tests) {
       // Only execute unit tests with specified key
-      if (key != ~0U && tes->key != key)
+      if ((key != ~0U && tes->key != key) || tes->suite != suite)
         continue;
 
       // Indicate that this test was tested
+      // Only the ones that are marked true are reported
       executed_tests[tes->index] = true;
+
+      // Only execute unit tests that have not been failed already
+      if (tes->failed)
+        continue;
 
       // Update the global state, so failed asserts can be logged and processed
       current_ = tes;
@@ -228,6 +248,9 @@ start:
         n += 1;
     }
 
+    if (n == 0)
+      return;
+
     const char *test_name[n];
     const char *test_reason[n];
     bool test_failed[n];
@@ -236,7 +259,7 @@ start:
 
     int i = 0;
     int j = 0;
-    for (test *tes: tests_) {
+    for (test *tes: test::tests) {
       if (executed_tests[j]) {
         test_name[i] = tes->name.c_str();
         test_failed[i] = tes->failed;
