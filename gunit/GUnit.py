@@ -152,3 +152,58 @@ class GUnit:
         target.remote = f'-ex "target extended-remote {gdb_uri}"'
 
         return target
+
+    # From input file, produce the set of files that are required for the compilaton
+    # This is used for getting the set of all the unit tests that are required to be
+    # compiled when compiling multiple suites
+    def cascade(filename):
+        # Return list of filenames that are children to the given file
+        def get_children(filename):
+            text = ""
+            try:
+                with open(filename) as f:
+                    text = f.readlines()
+            except Exception:
+                return []
+
+            # Scourage for children
+            children = []
+            for line in text:
+                linesplit = line.split('//#')
+                if len(linesplit) > 1:
+                    paths = re.findall(r'\[[a-zA-Z0-9/_\-.]+\]', linesplit[1])
+                    plen = len(paths)
+
+                    if plen == 0:
+                        continue
+
+                    for i in range(plen):
+                        paths[i] = paths[i].strip().replace('\n', '')[1:-1]
+
+                    children += paths
+
+            # Prevent infinite loops
+            relativefn = filename.split('/')[-1]
+            if relativefn in children:
+                children.remove(relativefn)
+
+            return children
+
+        casc = set()
+        done = set()
+        todo = set([filename])
+
+        while len(todo) > 0:
+            r = todo.pop()
+
+            newstuff = get_children(r)
+            if len(newstuff) == 0:
+                continue
+
+            done.add(r)
+            newset = set(newstuff) - done
+
+            todo |= newset
+            casc |= newset
+
+        return casc
