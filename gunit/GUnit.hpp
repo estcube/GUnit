@@ -8,6 +8,7 @@
 #include <concepts>
 #include <functional>
 #include <chrono>
+#include <type_traits>
 
 #include <cstdint>
 #include <cstring>
@@ -55,6 +56,9 @@ concept iterable = requires(T container) {
   { container.end() } -> std::iterator;
 };
 
+template<typename T>
+concept carray = std::equality_comparable<T> && std::is_array<T>::value;
+
 static void fail(const std::string &reason, int line = __builtin_LINE()) {
   current_->failed = true;
   current_->reason = reason;
@@ -67,7 +71,7 @@ static void fail(const std::string &reason, int line = __builtin_LINE()) {
 template<typename T>
 struct affirm {
 protected:
-  const T val;
+  const T &val;
   const size_t size;
   const int line;
 
@@ -80,18 +84,19 @@ protected:
     longjmp(jump_env_, 1);
   }
 
-  constexpr std::string to_string(const T &arg) const noexcept requires numeric<T> {
+  template <typename S>
+  constexpr std::string to_string(const S &arg) const noexcept requires numeric<S> {
     return std::to_string(arg);
   }
 
-  constexpr std::string to_string(const T &arg) const noexcept {
+  constexpr std::string to_string(const auto &arg) const noexcept {
     return std::to_string((uintptr_t) &arg);
   }
 
 public:
-  constexpr affirm(const T val, int line = __builtin_LINE()) noexcept : val(val), size(sizeof(val)), line(line) {}
+  constexpr affirm(const T &val, int line = __builtin_LINE()) noexcept : val(val), size(sizeof(val)), line(line) {}
 
-  constexpr affirm(const T val, size_t size, int line = __builtin_LINE()) noexcept : val(val), size(size), line(line) {}
+  constexpr affirm(const T &val, size_t size, int line = __builtin_LINE()) noexcept : val(val), size(size), line(line) {}
 
   bool operator ==(const affirm<T> &other) const noexcept requires iterable<T> {
     if (std::equal(this->val, other.val))
@@ -110,10 +115,33 @@ public:
     return false;
   }
 
+  // NOTE: the array has to have constant size
+  bool operator ==(const affirm<T> &other) const noexcept requires carray<T> {
+    for (uint32_t i = 0; i < this->size / sizeof(this->val[0]); ++i) {
+      if (this->val[i] != other.val[i]) {
+        this->fail("Assertion fail: "s + this->to_string(this->val[i]) + " == "s + this->to_string(other.val[i]) + " at index " + this->to_string(i));
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  // NOTE: the array has to have constant size
+  bool operator !=(const affirm<T> &other) const noexcept requires carray<T> {
+    for (uint32_t i = 0; i < this->size / sizeof(this->val[0]); ++i) {
+      if (this->val[i] != other.val[i]) {
+        return true;
+      }
+    }
+
+    this->fail("Assertion fail: the arrays are equal"s);
+    return false;
+  }
+
   bool operator ==(const affirm<T> &other) const noexcept requires std::equality_comparable<T> {
     if (this->val == other.val)
       return true;
-
 
     this->fail("Assertion fail: "s + this->to_string(this->val) + " == "s + this->to_string(other.val));
     return false;
