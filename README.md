@@ -1,7 +1,7 @@
 # GUnit
 App for executing C/C++ unit tests using GDB.
 
-Documentation: https://github.com/estcube/GUnit/wiki/Documentation
+Documentation: https://github.com/estcube/GUnit/wiki
 ## Installation
 The easiest way to install Gunit is through pip: https://pypi.org/project/gunit/
 
