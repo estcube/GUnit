@@ -303,7 +303,7 @@ end:;
   }
 
   static inline void run(const std::function<void()> before, const std::function<void()> after, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
-    suite::run(before, after, [](){}, key, suite);
+    suite::run(before, after, after, key, suite);
   }
 
   static inline void run(uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
