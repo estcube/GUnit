@@ -48,8 +48,11 @@ public:
   static inline std::list<test*> tests = std::list<test*>();
 
   test(std::string name, const std::function<void()> routine, uint32_t key = ~0U, const char *suite = __builtin_FILE()) : index(running_index), name(name), routine(routine), key(key), suite(suite) {
-    tests.push_back(this);
-    running_index = running_index + 1;
+    if (running_index < GUNIT_MAX_TESTS) {
+      tests.push_back(this);
+      running_index = running_index + 1;
+    }
+    // TODO: report to user that some tests were not run
   }
 };
 
