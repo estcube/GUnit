@@ -1,7 +1,13 @@
 #pragma once
 
+#ifndef GUNIT_MAX_TESTS
+#define GUNIT_MAX_TESTS 64
+#endif
+
+#define GUNIT_STACK (GUNIT_MAX_TESTS * 17 + 1024)
+
 #pragma GCC push_options
-#pragma GCC optimize ("-O0")
+#pragma GCC optimize ("O0")
 
 #include <string>
 #include <list>
@@ -26,7 +32,7 @@ static test *current_ = nullptr;
 static jmp_buf jump_env_;
 
 struct test {
-  static inline uint32_t running_index = 0;
+  volatile static inline uint32_t running_index = 0;
 
 public:
   const uint32_t index;
@@ -43,7 +49,7 @@ public:
 
   test(std::string name, const std::function<void()> routine, uint32_t key = ~0U, const char *suite = __builtin_FILE()) : index(running_index), name(name), routine(routine), key(key), suite(suite) {
     tests.push_back(this);
-    running_index += 1;
+    running_index = running_index + 1;
   }
 };
 
@@ -222,7 +228,7 @@ namespace suite {
   /**
    * Runs all the tests in the suite
    */
-  static inline void run(const std::function<void()> before, const std::function<void()> after, const std::function<void()> onfail, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
+  [[gnu::optimize("O0")]] static inline void run(const std::function<void()> before, const std::function<void()> after, const std::function<void()> onfail, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
     int jump_val = 0;
 
     if (test::tests.size() == 0)
@@ -230,6 +236,7 @@ namespace suite {
 
     bool executed_tests[test::tests.size()] = {false};
 
+[[maybe_unused]]
 start:
 
     for (test *tes: test::tests) {
@@ -270,23 +277,23 @@ start:
     }
 
     // Data collection
-    int n = 0;
+    volatile int n = 0;
     for (bool tested: executed_tests) {
       if (tested)
-        n += 1;
+        n = n + 1;
     }
 
     if (n == 0)
       return;
 
-    const char *test_name[n];
-    const char *test_reason[n];
-    bool test_failed[n];
-    float test_elapsed[n];
-    uint32_t test_location[n];
+    [[maybe_unused]] volatile const char *test_name[GUNIT_MAX_TESTS];
+    [[maybe_unused]] volatile const char *test_reason[GUNIT_MAX_TESTS];
+    [[maybe_unused]] volatile bool test_failed[GUNIT_MAX_TESTS];
+    [[maybe_unused]] volatile float test_elapsed[GUNIT_MAX_TESTS];
+    [[maybe_unused]] volatile uint32_t test_location[GUNIT_MAX_TESTS];
 
-    int i = 0;
-    int j = 0;
+    volatile int i = 0;
+    volatile int j = 0;
     for (test *tes: test::tests) {
       if (executed_tests[j]) {
         test_name[i] = tes->name.c_str();
@@ -294,19 +301,20 @@ start:
         test_reason[i] = tes->reason.c_str();
         test_elapsed[i] = tes->elapsed;
         test_location[i] = tes->location;
-        ++i;
+        i = i + 1;
       }
-      ++j;
+      j = j + 1;
     }
 
+[[maybe_unused]]
 end:;
   }
 
-  static inline void run(const std::function<void()> before, const std::function<void()> after, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
-    suite::run(before, after, after, key, suite);
+  [[gnu::optimize("O0")]] static inline void run(const std::function<void()> before, const std::function<void()> after, uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
+    suite::run(before, after, [](){}, key, suite);
   }
 
-  static inline void run(uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
+  [[gnu::optimize("O0")]] static inline void run(uint32_t key = ~0U, const char *suite = __builtin_FILE()) noexcept {
     suite::run([](){}, [](){}, key, suite);
   }
 } // namespace suite
